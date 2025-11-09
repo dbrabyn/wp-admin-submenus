@@ -3,7 +3,7 @@
  * Plugin Name: WP Admin Submenus
  * Plugin URI: https://github.com/dbrabyn/wp-submenus
  * Description: Adds intelligent submenus to WordPress' main admin menu for quick access to posts, taxonomies, and users. Configure which post types and how many to include via Settings.
- * Version: 1.0.1
+ * Version: 1.0.2
  * Author: David Brabyn
  * Author URI: https://9wdigital.com
  * License: GPL v2 or later
@@ -81,13 +81,16 @@ class WP_Admin_Submenus {
         // Load text domain for translations
         add_action('init', [$this, 'load_textdomain']);
 
-        // Admin menu hooks
+        // Admin menu hooks - run late to ensure all post types are registered
         add_action('admin_menu', [$this, 'register_all_submenus'], 999);
         add_action('admin_head', [$this, 'admin_submenu_assets']);
 
         // Settings page hooks
         add_action('admin_menu', [$this, 'add_settings_page'], 10);
         add_action('admin_init', [$this, 'register_settings']);
+
+        // Clear cached options when post types are registered
+        add_action('registered_post_type', [$this, 'clear_cache']);
 
         // Plugin action links
         add_filter('plugin_action_links_' . plugin_basename(WP_ADMIN_SUBMENUS_PLUGIN_FILE), [$this, 'add_action_links']);
@@ -102,6 +105,14 @@ class WP_Admin_Submenus {
             false,
             dirname(plugin_basename(WP_ADMIN_SUBMENUS_PLUGIN_FILE)) . '/languages'
         );
+    }
+
+    /**
+     * Clear plugin cache (called when post types are registered)
+     */
+    public function clear_cache() {
+        $this->config = null;
+        $this->options = null;
     }
 
     /**
@@ -653,7 +664,20 @@ class WP_Admin_Submenus {
     public function render_post_types_field() {
         $options = $this->get_options();
         $enabled_post_types = $options['enabled_post_types'];
-        $available_post_types = $this->get_default_post_types();
+
+        // Get ALL available post types at render time, not just defaults
+        $excluded = [
+            'post', 'attachment', 'revision', 'nav_menu_item', 'custom_css',
+            'customize_changeset', 'oembed_cache', 'user_request', 'wp_block',
+            'wp_template', 'wp_template_part', 'wp_global_styles', 'wp_navigation',
+            'acf-field-group', 'acf-field',
+            'frm_form', 'frm_display', 'frm_style', 'frm_styles', 'frm_payment', 'frm_notification',
+            'nf_sub'
+        ];
+
+        $excluded = apply_filters('wp_admin_submenus_excluded_post_types', $excluded);
+        $post_types = get_post_types(['public' => true], 'names');
+        $available_post_types = array_values(array_diff($post_types, $excluded));
 
         if (empty($available_post_types)) {
             echo '<p>' . esc_html__('No eligible post types found.', 'wp-admin-submenus') . '</p>';
