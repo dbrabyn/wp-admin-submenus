@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.5] - 2025-11-09
+
+### Fixed
+
+- Improved post type filtering to exclude internal/system post types from settings page
+- Now filters out ACF internal post types: `acf-post-type`, `acf-taxonomy`, `acf-ui-options-page`
+- Added intelligent filtering: only includes post types that are public OR have `show_in_menu` enabled
+- This prevents internal plugin post types (that only have `show_ui=true`) from appearing in the settings
+
+### Changed
+
+- Post type detection now checks both `public` and `show_in_menu` properties
+- Settings page now uses the same improved filtering logic for consistency
+
 ## [1.0.4] - 2025-11-09
 
 ### Added

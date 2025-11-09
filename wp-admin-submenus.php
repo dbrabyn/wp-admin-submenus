@@ -3,7 +3,7 @@
  * Plugin Name: WP Admin Submenus
  * Plugin URI: https://github.com/dbrabyn/wp-submenus
  * Description: Adds intelligent submenus to WordPress' main admin menu for quick access to posts, taxonomies, and users. Configure which post types and how many to include via Settings.
- * Version: 1.0.4
+ * Version: 1.0.5
  * Author: David Brabyn
  * Author URI: https://9wdigital.com
  * License: GPL v2 or later
@@ -19,7 +19,6 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('WP_ADMIN_SUBMENUS_VERSION', '1.0.3');
 define('WP_ADMIN_SUBMENUS_PLUGIN_FILE', __FILE__);
 define('WP_ADMIN_SUBMENUS_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('WP_ADMIN_SUBMENUS_DEFAULT_LIMIT', 20);
@@ -142,7 +141,7 @@ class WP_Admin_Submenus {
             'post', 'attachment', 'revision', 'nav_menu_item', 'custom_css',
             'customize_changeset', 'oembed_cache', 'user_request', 'wp_block',
             'wp_template', 'wp_template_part', 'wp_global_styles', 'wp_navigation',
-            'acf-field-group', 'acf-field',
+            'acf-field-group', 'acf-field', 'acf-post-type', 'acf-taxonomy', 'acf-ui-options-page',
             'frm_form', 'frm_display', 'frm_style', 'frm_styles', 'frm_payment', 'frm_notification',
             'nf_sub'
         ];
@@ -150,9 +149,24 @@ class WP_Admin_Submenus {
         // Allow filtering of excluded post types
         $excluded = apply_filters('wp_admin_submenus_excluded_post_types', $excluded);
 
-        // Get post types that show in admin UI (includes both public and non-public CPTs with show_ui=true)
-        $post_types = get_post_types(['show_ui' => true], 'names');
-        return array_values(array_diff($post_types, $excluded));
+        // Get post types that show in admin UI but filter out non-public ones unless explicitly needed
+        $post_types = get_post_types(['show_ui' => true], 'objects');
+        $eligible_post_types = [];
+
+        foreach ($post_types as $post_type => $post_type_obj) {
+            // Skip excluded post types
+            if (in_array($post_type, $excluded, true)) {
+                continue;
+            }
+
+            // Only include post types that are public OR have show_in_menu enabled
+            // This filters out internal post types that only have show_ui=true
+            if ($post_type_obj->public || $post_type_obj->show_in_menu) {
+                $eligible_post_types[] = $post_type;
+            }
+        }
+
+        return array_values($eligible_post_types);
     }
 
     /**
@@ -672,15 +686,29 @@ class WP_Admin_Submenus {
             'post', 'attachment', 'revision', 'nav_menu_item', 'custom_css',
             'customize_changeset', 'oembed_cache', 'user_request', 'wp_block',
             'wp_template', 'wp_template_part', 'wp_global_styles', 'wp_navigation',
-            'acf-field-group', 'acf-field',
+            'acf-field-group', 'acf-field', 'acf-post-type', 'acf-taxonomy', 'acf-ui-options-page',
             'frm_form', 'frm_display', 'frm_style', 'frm_styles', 'frm_payment', 'frm_notification',
             'nf_sub'
         ];
 
         $excluded = apply_filters('wp_admin_submenus_excluded_post_types', $excluded);
-        // Get post types that show in admin UI (includes both public and non-public CPTs with show_ui=true)
-        $post_types = get_post_types(['show_ui' => true], 'names');
-        $available_post_types = array_values(array_diff($post_types, $excluded));
+
+        // Get post types that show in admin UI but filter out non-public ones unless explicitly needed
+        $post_types = get_post_types(['show_ui' => true], 'objects');
+        $available_post_types = [];
+
+        foreach ($post_types as $post_type => $post_type_obj) {
+            // Skip excluded post types
+            if (in_array($post_type, $excluded, true)) {
+                continue;
+            }
+
+            // Only include post types that are public OR have show_in_menu enabled
+            // This filters out internal post types that only have show_ui=true
+            if ($post_type_obj->public || $post_type_obj->show_in_menu) {
+                $available_post_types[] = $post_type;
+            }
+        }
 
         if (empty($available_post_types)) {
             echo '<p>' . esc_html__('No eligible post types found.', 'wp-admin-submenus') . '</p>';
@@ -751,9 +779,16 @@ class WP_Admin_Submenus {
         if (!current_user_can('manage_options')) {
             return;
         }
+
+        // Get version from plugin header
+        if (!function_exists('get_plugin_data')) {
+            require_once ABSPATH . 'wp-admin/includes/plugin.php';
+        }
+        $plugin_data = get_plugin_data(WP_ADMIN_SUBMENUS_PLUGIN_FILE);
+        $version = $plugin_data['Version'];
         ?>
         <div class="wrap">
-            <h1><?php echo esc_html(get_admin_page_title()); ?> <small style="font-size: 0.6em; font-weight: normal; color: #666;">v<?php echo esc_html(WP_ADMIN_SUBMENUS_VERSION); ?></small></h1>
+            <h1><?php echo esc_html(get_admin_page_title()); ?> <small style="font-size: 0.6em; font-weight: normal; color: #666;">v<?php echo esc_html($version); ?></small></h1>
             <form action="options.php" method="post">
                 <?php
                 settings_fields('wp_admin_submenus_options');

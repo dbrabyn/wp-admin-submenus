@@ -44,9 +44,14 @@ Navigate to **Settings > Admin Submenus** to configure:
 
 ### Default Behavior
 
-- All public post types are enabled by default (except core WordPress types like posts, attachments, revisions, etc.)
+- All user-facing post types are enabled by default (except core WordPress types like posts, attachments, revisions, etc.)
+- Post types must be either public OR have `show_in_menu` enabled to be included
 - Shows up to 20 items per submenu
-- Automatically excludes common plugin internal post types (ACF, Formidable Forms, Ninja Forms)
+- Automatically excludes internal/system post types:
+  - Core WordPress internal types (blocks, templates, navigation, etc.)
+  - ACF internal types (field groups, fields, post types, taxonomies, options pages)
+  - Formidable Forms internal types
+  - Ninja Forms submissions
 - Taxonomies and user roles are always shown (following the same exclusion rules)
 
 ## Filters
