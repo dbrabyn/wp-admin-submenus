@@ -3,7 +3,7 @@
  * Plugin Name: WP Admin Submenus
  * Plugin URI: https://github.com/dbrabyn/wp-submenus
  * Description: Adds intelligent submenus to WordPress' main admin menu for quick access to posts, taxonomies, and users. Configure which post types and how many to include via Settings.
- * Version: 1.0.3
+ * Version: 1.0.4
  * Author: David Brabyn
  * Author URI: https://9wdigital.com
  * License: GPL v2 or later
@@ -19,7 +19,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('WP_ADMIN_SUBMENUS_VERSION', '1.0.0');
+define('WP_ADMIN_SUBMENUS_VERSION', '1.0.3');
 define('WP_ADMIN_SUBMENUS_PLUGIN_FILE', __FILE__);
 define('WP_ADMIN_SUBMENUS_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('WP_ADMIN_SUBMENUS_DEFAULT_LIMIT', 20);
@@ -585,7 +585,7 @@ class WP_Admin_Submenus {
     public function add_settings_page() {
         add_options_page(
             __('WP Admin Submenus', 'wp-admin-submenus'),
-            __('Admin Submenus', 'wp-admin-submenus'),
+            __('WP Admin Submenus', 'wp-admin-submenus'),
             'manage_options',
             'wp-admin-submenus',
             [$this, 'render_settings_page']
@@ -665,6 +665,7 @@ class WP_Admin_Submenus {
     public function render_post_types_field() {
         $options = $this->get_options();
         $enabled_post_types = $options['enabled_post_types'];
+        $saved_options = get_option('wp_admin_submenus_options', []);
 
         // Get ALL available post types at render time, not just defaults
         $excluded = [
@@ -694,7 +695,8 @@ class WP_Admin_Submenus {
                 continue;
             }
 
-            $checked = in_array($post_type, $enabled_post_types, true);
+            // Check by default if not explicitly saved, or if it's in the enabled list
+            $checked = empty($saved_options) || in_array($post_type, $enabled_post_types, true);
             $id = 'post_type_' . esc_attr($post_type);
             ?>
             <label for="<?php echo $id; ?>" style="display: block; margin-bottom: 8px;">
@@ -707,7 +709,6 @@ class WP_Admin_Submenus {
                     aria-label="<?php echo esc_attr(sprintf(__('Enable submenus for %s', 'wp-admin-submenus'), $post_type_obj->labels->name)); ?>"
                 />
                 <?php echo esc_html($post_type_obj->labels->name); ?>
-                <span style="color: #666; font-size: 12px;" aria-hidden="true">(<?php echo esc_html($post_type); ?>)</span>
             </label>
             <?php
         }

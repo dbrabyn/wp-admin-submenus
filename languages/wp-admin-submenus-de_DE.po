@@ -16,6 +16,14 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Manual\n"
 
+#. Plugin Name of the plugin
+msgid "WP Admin Submenus"
+msgstr "WP Admin Submenus"
+
+#. Description of the plugin
+msgid "Adds intelligent submenus to WordPress' main admin menu for quick access to posts, taxonomies, and users. Configure which post types and how many to include via Settings."
+msgstr "Fügt intelligente Untermenüs zum WordPress-Hauptadministrationsmenü hinzu für schnellen Zugriff auf Beiträge, Taxonomien und Benutzer. Konfigurieren Sie, welche Beitragstypen und wie viele über die Einstellungen einbezogen werden sollen."
+
 #: wp-admin-submenus.php:364
 msgid "See more →"
 msgstr "Mehr anzeigen →"
@@ -30,8 +38,8 @@ msgid "WP Admin Submenus Settings"
 msgstr "WP Admin-Untermenüs Einstellungen"
 
 #: wp-admin-submenus.php:563
-msgid "Admin Submenus"
-msgstr "Admin-Untermenüs"
+msgid "WP Admin Submenus"
+msgstr "WP Admin Submenus"
 
 #: wp-admin-submenus.php:582
 msgid "Post Type Submenus"
