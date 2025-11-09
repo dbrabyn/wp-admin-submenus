@@ -120,10 +120,6 @@ The plugin is fully translation-ready and includes:
    bash compile-translations.sh
    ```
 
-### Do I need an English translation?
-
-**No.** The plugin's default language is English, so you don't need an `en_US.po` file. The English strings are already in the code. Only create translation files for other languages.
-
 ## Accessibility
 
 The plugin follows WCAG 2.1 Level AA accessibility guidelines:

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WP Admin Submenus
  * Plugin URI: https://github.com/dbrabyn/wp-submenus
- * Description: Adds intelligent submenus to WordPress admin for quick access to posts, taxonomies, and users. Configure which post types to include via Settings.
+ * Description: Adds intelligent submenus to WordPress' main admin menu for quick access to posts, taxonomies, and users. Configure which post types and how many to include via Settings.
  * Version: 1.0.0
  * Author: David Brabyn
  * Author URI: https://9wdigital.com
@@ -572,7 +572,7 @@ class WP_Admin_Submenus {
      */
     public function add_settings_page() {
         add_options_page(
-            __('WP Admin Submenus Settings', 'wp-admin-submenus'),
+            __('WP Admin Submenus', 'wp-admin-submenus'),
             __('Admin Submenus', 'wp-admin-submenus'),
             'manage_options',
             'wp-admin-submenus',
@@ -644,7 +644,7 @@ class WP_Admin_Submenus {
      * Render post types section description
      */
     public function render_post_types_section() {
-        echo '<p>' . esc_html__('Configure which post types should display submenus in the WordPress admin.', 'wp-admin-submenus') . '</p>';
+        echo '<p>' . esc_html__('Configure which post types should display submenus in the WordPress admin menu.', 'wp-admin-submenus') . '</p>';
     }
 
     /**
@@ -726,7 +726,7 @@ class WP_Admin_Submenus {
         }
         ?>
         <div class="wrap">
-            <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
+            <h1><?php echo esc_html(get_admin_page_title()); ?> <small style="font-size: 0.6em; font-weight: normal; color: #666;">v<?php echo esc_html(WP_ADMIN_SUBMENUS_VERSION); ?></small></h1>
             <form action="options.php" method="post">
                 <?php
                 settings_fields('wp_admin_submenus_options');
