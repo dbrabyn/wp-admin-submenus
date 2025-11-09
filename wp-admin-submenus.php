@@ -34,6 +34,10 @@ $wpAdminSubmenusUpdateChecker = PucFactory::buildUpdateChecker(
     'wp-admin-submenus'
 );
 
+// Required for private repositories - add your GitHub Personal Access Token
+// Get token from: https://github.com/settings/tokens (needs 'repo' scope)
+$wpAdminSubmenusUpdateChecker->setAuthentication('YOUR_GITHUB_TOKEN_HERE');
+
 // Optionally set the branch for updates (defaults to 'main' or 'master')
 // $wpAdminSubmenusUpdateChecker->setBranch('main');
 
