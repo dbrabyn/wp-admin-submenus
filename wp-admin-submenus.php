@@ -3,7 +3,7 @@
  * Plugin Name: WP Admin Submenus
  * Plugin URI: https://github.com/dbrabyn/wp-submenus
  * Description: Adds intelligent submenus to WordPress' main admin menu for quick access to posts, taxonomies, and users. Configure which post types and how many to include via Settings.
- * Version: 1.0.9
+ * Version: 1.0.11
  * Author: David Brabyn
  * Author URI: https://9wdigital.com
  * License: GPL v2 or later
@@ -413,8 +413,8 @@ class WP_Admin_Submenus {
 
         // Approximate character limits based on line setting
         $char_limits = [
-            '1' => 25,
-            '2' => 50,
+            '1' => 18,
+            '2' => 35,
             'none' => 0
         ];
         $max_chars = $char_limits[$truncation] ?? 0;

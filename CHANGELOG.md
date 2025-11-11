@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.9] - 2025-11-11
 
+### Tweaked
+
+- Changed 1 and 2 lines limits to 18 and 35 characters resp.
+
+## [1.0.10] - 2025-11-11
+
 ### Added
 
 - Title truncation setting with three options: no truncation (default), 1 line, or 2 lines
