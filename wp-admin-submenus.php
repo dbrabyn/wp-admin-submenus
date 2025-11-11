@@ -3,7 +3,7 @@
  * Plugin Name: WP Admin Submenus
  * Plugin URI: https://github.com/dbrabyn/wp-submenus
  * Description: Adds intelligent submenus to WordPress' main admin menu for quick access to posts, taxonomies, and users. Configure which post types and how many to include via Settings.
- * Version: 1.0.7
+ * Version: 1.0.8
  * Author: David Brabyn
  * Author URI: https://9wdigital.com
  * License: GPL v2 or later
@@ -125,6 +125,7 @@ class WP_Admin_Submenus {
         $defaults = [
             'enabled_post_types' => $this->get_default_post_types(),
             'item_limit' => WP_ADMIN_SUBMENUS_DEFAULT_LIMIT,
+            'title_truncation' => 'none',
         ];
 
         $saved_options = get_option('wp_admin_submenus_options', []);
@@ -527,6 +528,9 @@ class WP_Admin_Submenus {
         if (!current_user_can('edit_posts')) {
             return;
         }
+
+        $options = $this->get_options();
+        $truncation = $options['title_truncation'];
         ?>
         <style>
             /* Screen reader text for accessibility */
@@ -550,8 +554,17 @@ class WP_Admin_Submenus {
                 overflow-y: auto;
             }
             #adminmenu .wp-submenu a {
+                <?php if ($truncation === 'none'): ?>
                 white-space: normal !important;
                 word-wrap: break-word !important;
+                <?php else: ?>
+                display: -webkit-box !important;
+                -webkit-box-orient: vertical !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+                word-wrap: break-word !important;
+                -webkit-line-clamp: <?php echo esc_attr($truncation); ?> !important;
+                <?php endif; ?>
             }
             /* Indent individual item links */
             #adminmenu .wp-submenu li a[href*="post.php?post="],
@@ -643,6 +656,14 @@ class WP_Admin_Submenus {
             'wp-admin-submenus',
             'wp_admin_submenus_post_types'
         );
+
+        add_settings_field(
+            'title_truncation',
+            __('Title Truncation', 'wp-admin-submenus'),
+            [$this, 'render_title_truncation_field'],
+            'wp-admin-submenus',
+            'wp_admin_submenus_post_types'
+        );
     }
 
     /**
@@ -663,6 +684,12 @@ class WP_Admin_Submenus {
         if ($sanitized['item_limit'] < 1) {
             $sanitized['item_limit'] = WP_ADMIN_SUBMENUS_DEFAULT_LIMIT;
         }
+
+        // Sanitize title truncation
+        $allowed_truncation = ['none', '1', '2'];
+        $sanitized['title_truncation'] = isset($input['title_truncation']) && in_array($input['title_truncation'], $allowed_truncation, true)
+            ? $input['title_truncation']
+            : 'none';
 
         // Clear config cache
         $this->config = null;
@@ -774,6 +801,52 @@ class WP_Admin_Submenus {
         />
         <p class="description" id="item-limit-description">
             <?php esc_html_e('Maximum number of items to show in each submenu before "See more" link appears.', 'wp-admin-submenus'); ?>
+        </p>
+        <?php
+    }
+
+    /**
+     * Render title truncation field
+     */
+    public function render_title_truncation_field() {
+        $options = $this->get_options();
+        $truncation = $options['title_truncation'];
+        ?>
+        <fieldset aria-describedby="title-truncation-description">
+            <legend class="screen-reader-text"><?php esc_html_e('Title Truncation', 'wp-admin-submenus'); ?></legend>
+            <label for="truncation_none" style="display: block; margin-bottom: 8px;">
+                <input
+                    type="radio"
+                    name="wp_admin_submenus_options[title_truncation]"
+                    id="truncation_none"
+                    value="none"
+                    <?php checked($truncation, 'none'); ?>
+                />
+                <?php esc_html_e('No truncation (wrap to multiple lines)', 'wp-admin-submenus'); ?>
+            </label>
+            <label for="truncation_1" style="display: block; margin-bottom: 8px;">
+                <input
+                    type="radio"
+                    name="wp_admin_submenus_options[title_truncation]"
+                    id="truncation_1"
+                    value="1"
+                    <?php checked($truncation, '1'); ?>
+                />
+                <?php esc_html_e('Truncate to 1 line', 'wp-admin-submenus'); ?>
+            </label>
+            <label for="truncation_2" style="display: block; margin-bottom: 8px;">
+                <input
+                    type="radio"
+                    name="wp_admin_submenus_options[title_truncation]"
+                    id="truncation_2"
+                    value="2"
+                    <?php checked($truncation, '2'); ?>
+                />
+                <?php esc_html_e('Truncate to 2 lines', 'wp-admin-submenus'); ?>
+            </label>
+        </fieldset>
+        <p class="description" id="title-truncation-description">
+            <?php esc_html_e('Control how long submenu titles are displayed. Truncated titles will show ellipsis (...) when cut off.', 'wp-admin-submenus'); ?>
         </p>
         <?php
     }
