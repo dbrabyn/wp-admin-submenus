@@ -138,7 +138,7 @@ class WP_Admin_Submenus {
      */
     private function get_default_post_types() {
         $excluded = [
-            'post', 'attachment', 'revision', 'nav_menu_item', 'custom_css',
+            'attachment', 'revision', 'nav_menu_item', 'custom_css',
             'customize_changeset', 'oembed_cache', 'user_request', 'wp_block',
             'wp_template', 'wp_template_part', 'wp_global_styles', 'wp_navigation',
             'acf-field-group', 'acf-field', 'acf-post-type', 'acf-taxonomy', 'acf-ui-options-page',
@@ -349,7 +349,11 @@ class WP_Admin_Submenus {
                 return add_query_arg('role', $extra['role'] ?? '', admin_url('users.php'));
 
             case 'see_more_posts':
-                return add_query_arg('post_type', $extra['post_type'] ?? '', admin_url('edit.php'));
+                $post_type = $extra['post_type'] ?? '';
+                if ($post_type === 'post') {
+                    return admin_url('edit.php');
+                }
+                return add_query_arg('post_type', $post_type, admin_url('edit.php'));
 
             case 'see_more_terms':
                 $args = ['taxonomy' => $extra['taxonomy'] ?? ''];
@@ -400,7 +404,7 @@ class WP_Admin_Submenus {
         }
 
         $post_type_obj = get_post_type_object($post_type);
-        $parent_slug = "edit.php?post_type={$post_type}";
+        $parent_slug = ($post_type === 'post') ? 'edit.php' : "edit.php?post_type={$post_type}";
         $capability = $post_type_obj->cap->edit_posts ?? 'edit_posts';
 
         foreach ($posts_data['items'] as $post) {
@@ -684,7 +688,7 @@ class WP_Admin_Submenus {
 
         // Get ALL available post types at render time, not just defaults
         $excluded = [
-            'post', 'attachment', 'revision', 'nav_menu_item', 'custom_css',
+            'attachment', 'revision', 'nav_menu_item', 'custom_css',
             'customize_changeset', 'oembed_cache', 'user_request', 'wp_block',
             'wp_template', 'wp_template_part', 'wp_global_styles', 'wp_navigation',
             'acf-field-group', 'acf-field', 'acf-post-type', 'acf-taxonomy', 'acf-ui-options-page',
