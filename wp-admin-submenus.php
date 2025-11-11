@@ -408,11 +408,25 @@ class WP_Admin_Submenus {
         $parent_slug = ($post_type === 'post') ? 'edit.php' : "edit.php?post_type={$post_type}";
         $capability = $post_type_obj->cap->edit_posts ?? 'edit_posts';
 
+        $options = $this->get_options();
+        $truncation = $options['title_truncation'];
+
+        // Approximate character limits based on line setting
+        $char_limits = [
+            '1' => 25,
+            '2' => 50,
+            'none' => 0
+        ];
+        $max_chars = $char_limits[$truncation] ?? 0;
+
         foreach ($posts_data['items'] as $post) {
+            $title = $post->post_title;
+            $display_title = ($max_chars > 0) ? $this->truncate_title($title, $max_chars) : $title;
+
             add_submenu_page(
                 $parent_slug,
-                esc_html($post->post_title),
-                '<span aria-hidden="true">&nbsp;&nbsp;-&nbsp;</span>' . esc_html($post->post_title),
+                esc_html($title),
+                '<span aria-hidden="true">&nbsp;&nbsp;-&nbsp;</span>' . esc_html($display_title),
                 $capability,
                 $this->generate_submenu_url('post', $post)
             );
@@ -446,11 +460,25 @@ class WP_Admin_Submenus {
         }
         $capability = $taxonomy_obj->cap->edit_terms ?? 'manage_categories';
 
+        $options = $this->get_options();
+        $truncation = $options['title_truncation'];
+
+        // Approximate character limits based on line setting
+        $char_limits = [
+            '1' => 25,
+            '2' => 50,
+            'none' => 0
+        ];
+        $max_chars = $char_limits[$truncation] ?? 0;
+
         foreach ($terms_data['items'] as $term) {
+            $name = $term->name;
+            $display_name = ($max_chars > 0) ? $this->truncate_title($name, $max_chars) : $name;
+
             add_submenu_page(
                 $parent_slug,
-                esc_html($term->name),
-                '<span aria-hidden="true">&nbsp;&nbsp;-&nbsp;</span>' . esc_html($term->name),
+                esc_html($name),
+                '<span aria-hidden="true">&nbsp;&nbsp;-&nbsp;</span>' . esc_html($display_name),
                 $capability,
                 $this->generate_submenu_url('term', $term, ['taxonomy' => $taxonomy, 'post_type' => $post_type])
             );
@@ -479,6 +507,17 @@ class WP_Admin_Submenus {
         $capability = 'list_users';
         $config = $this->get_submenu_config();
 
+        $options = $this->get_options();
+        $truncation = $options['title_truncation'];
+
+        // Approximate character limits based on line setting
+        $char_limits = [
+            '1' => 25,
+            '2' => 50,
+            'none' => 0
+        ];
+        $max_chars = $char_limits[$truncation] ?? 0;
+
         foreach ($config['user_roles'] as $role) {
             $users_data = $this->get_submenu_users_by_role($role, $limit);
             if (empty($users_data['items'])) {
@@ -499,10 +538,12 @@ class WP_Admin_Submenus {
 
             foreach ($users_data['items'] as $user) {
                 $display_name = $user->display_name ?: $user->user_login;
+                $truncated_name = ($max_chars > 0) ? $this->truncate_title($display_name, $max_chars) : $display_name;
+
                 add_submenu_page(
                     $parent_slug,
                     esc_html($display_name),
-                    '<span aria-hidden="true">&nbsp;&nbsp;-&nbsp;</span>' . esc_html($display_name),
+                    '<span aria-hidden="true">&nbsp;&nbsp;-&nbsp;</span>' . esc_html($truncated_name),
                     $capability,
                     $this->generate_submenu_url('user', $user)
                 );
@@ -522,15 +563,22 @@ class WP_Admin_Submenus {
     }
 
     /**
+     * Truncate title based on settings
+     */
+    private function truncate_title($title, $max_chars) {
+        if (mb_strlen($title) <= $max_chars) {
+            return $title;
+        }
+        return mb_substr($title, 0, $max_chars) . '…';
+    }
+
+    /**
      * Add admin CSS for submenus
      */
     public function admin_submenu_assets() {
         if (!current_user_can('edit_posts')) {
             return;
         }
-
-        $options = $this->get_options();
-        $truncation = $options['title_truncation'];
         ?>
         <style>
             /* Screen reader text for accessibility */
@@ -554,17 +602,8 @@ class WP_Admin_Submenus {
                 overflow-y: auto;
             }
             #adminmenu .wp-submenu a {
-                <?php if ($truncation === 'none'): ?>
                 white-space: normal !important;
                 word-wrap: break-word !important;
-                <?php else: ?>
-                display: -webkit-box !important;
-                -webkit-box-orient: vertical !important;
-                overflow: hidden !important;
-                text-overflow: ellipsis !important;
-                word-wrap: break-word !important;
-                -webkit-line-clamp: <?php echo esc_attr($truncation); ?> !important;
-                <?php endif; ?>
             }
             /* Indent individual item links */
             #adminmenu .wp-submenu li a[href*="post.php?post="],

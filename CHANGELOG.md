@@ -7,9 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.8] - 2025-11-11
 
-- Added title truncation to submenu titles and on/off, 1 or 2 lines options to Settings page
-
 ### Added
+
+- Title truncation setting with three options: no truncation (default), 1 line, or 2 lines
+- New "Title Truncation" setting in Settings page with radio button options
+- PHP-based truncation using character limits (~25 chars for 1 line, ~50 chars for 2 lines)
+- Multibyte-safe truncation with proper ellipsis character (…)
+
+### Changed
+
+- Truncated titles now use server-side PHP truncation instead of CSS for better consistency
+- Full title always preserved in menu page title attribute for accessibility
 
 ## [1.0.7] - 2025-11-11
 
