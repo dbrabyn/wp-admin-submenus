@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.17] - 2026-02-14
+
+### Fixed
+
+- Replaced direct `$wpdb->get_col()` query in uninstall.php with `get_sites()` WordPress API
+- Prefixed all global variables in uninstall.php with `wp_admin_submenus_` for PHPCS compliance
+- Renamed `$wpAdminSubmenusUpdateChecker` to `$wp_admin_submenus_update_checker` for prefix compliance
+- Shortened plugin description to stay within 150-character limit
+
 ## [1.0.15] - 2025-11-24
 
 ### Removed
