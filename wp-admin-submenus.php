@@ -1,9 +1,9 @@
 <?php
 /**
  * Plugin Name: WP Admin Submenus
- * Plugin URI: https://github.com/dbrabyn/wp-submenus
- * Description: Adds intelligent submenus to WordPress' main admin menu for quick access to posts, taxonomies, and users. Configure which post types and how many to include via Settings.
- * Version: 1.0.15
+ * Plugin URI: https://github.com/dbrabyn/wp-admin-submenus
+ * Description: Adds submenus to WordPress admin for quick access to posts, taxonomies, and users. Configurable via Settings.
+ * Version: 1.0.16
  * Author: David Brabyn
  * Author URI: https://9wdigital.com
  * License: GPL v2 or later
@@ -27,14 +27,14 @@ define('WP_ADMIN_SUBMENUS_DEFAULT_LIMIT', 20);// number of items per menu
 require WP_ADMIN_SUBMENUS_PLUGIN_DIR . 'plugin-update-checker/plugin-update-checker.php';
 use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
 
-$wpAdminSubmenusUpdateChecker = PucFactory::buildUpdateChecker(
-    'https://github.com/dbrabyn/wp-submenus/',
+$wp_admin_submenus_update_checker = PucFactory::buildUpdateChecker(
+    'https://github.com/dbrabyn/wp-admin-submenus/',
     WP_ADMIN_SUBMENUS_PLUGIN_FILE,
     'wp-admin-submenus'
 );
 
 // Optionally set the branch for updates (defaults to 'main' or 'master')
-// $wpAdminSubmenusUpdateChecker->setBranch('main');
+// $wp_admin_submenus_update_checker->setBranch('main');
 
 /**
  * Main Plugin Class
@@ -77,9 +77,6 @@ class WP_Admin_Submenus {
      * Initialize WordPress hooks
      */
     private function init_hooks() {
-        // Load text domain for translations
-        add_action('init', [$this, 'load_textdomain']);
-
         // Admin menu hooks - run late to ensure all post types are registered
         add_action('admin_menu', [$this, 'register_all_submenus'], 999);
         add_action('admin_head', [$this, 'admin_submenu_assets']);
@@ -93,17 +90,6 @@ class WP_Admin_Submenus {
 
         // Plugin action links
         add_filter('plugin_action_links_' . plugin_basename(WP_ADMIN_SUBMENUS_PLUGIN_FILE), [$this, 'add_action_links']);
-    }
-
-    /**
-     * Load plugin text domain for translations
-     */
-    public function load_textdomain() {
-        load_plugin_textdomain(
-            'wp-admin-submenus',
-            false,
-            dirname(plugin_basename(WP_ADMIN_SUBMENUS_PLUGIN_FILE)) . '/languages'
-        );
     }
 
     /**
@@ -414,13 +400,14 @@ class WP_Admin_Submenus {
 
         foreach ($posts_data['items'] as $post) {
             $title = $post->post_title;
+            $url = $this->generate_submenu_url('post', $post);
 
             add_submenu_page(
                 $parent_slug,
                 esc_html($title),
                 '<span aria-hidden="true">&nbsp;&nbsp;-&nbsp;</span><span class="submenu-title' . esc_attr($truncate_class) . '">' . esc_html($title) . '</span>',
                 $capability,
-                $this->generate_submenu_url('post', $post)
+                $url
             );
         }
 
@@ -526,9 +513,9 @@ class WP_Admin_Submenus {
             }
 
             if ($users_data['has_more']) {
-                /* translators: %s: role name */
                 add_submenu_page(
                     $parent_slug,
+                    /* translators: %s: role name */
                     sprintf(__('See more %s', 'wp-admin-submenus'), $role_name),
                     '<span class="see-more-link">' . __('See more →', 'wp-admin-submenus') . '</span>',
                     $capability,
@@ -545,6 +532,7 @@ class WP_Admin_Submenus {
         if (!current_user_can('edit_posts')) {
             return;
         }
+
         ?>
         <style>
             /* Screen reader text for accessibility */
@@ -793,15 +781,16 @@ class WP_Admin_Submenus {
 
             // Check by default if not explicitly saved, or if it's in the enabled list
             $checked = empty($saved_options) || in_array($post_type, $enabled_post_types, true);
-            $id = 'post_type_' . esc_attr($post_type);
+            $id = 'post_type_' . sanitize_key($post_type);
             ?>
-            <label for="<?php echo $id; ?>" style="display: block; margin-bottom: 8px;">
+            <label for="<?php echo esc_attr( $id ); ?>" style="display: block; margin-bottom: 8px;">
                 <input
                     type="checkbox"
                     name="wp_admin_submenus_options[enabled_post_types][]"
-                    id="<?php echo $id; ?>"
+                    id="<?php echo esc_attr( $id ); ?>"
                     value="<?php echo esc_attr($post_type); ?>"
                     <?php checked($checked); ?>
+                    <?php /* translators: %s: post type name */ ?>
                     aria-label="<?php echo esc_attr(sprintf(__('Enable submenus for %s', 'wp-admin-submenus'), $post_type_obj->labels->name)); ?>"
                 />
                 <?php echo esc_html($post_type_obj->labels->name); ?>

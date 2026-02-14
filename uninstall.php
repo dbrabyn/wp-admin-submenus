@@ -18,12 +18,10 @@ delete_option('wp_admin_submenus_options');
 
 // For multisite installations, delete options from all sites
 if (is_multisite()) {
-    global $wpdb;
+    $wp_admin_submenus_sites = get_sites(array('fields' => 'ids'));
 
-    $blog_ids = $wpdb->get_col("SELECT blog_id FROM $wpdb->blogs");
-
-    foreach ($blog_ids as $blog_id) {
-        switch_to_blog($blog_id);
+    foreach ($wp_admin_submenus_sites as $wp_admin_submenus_blog_id) {
+        switch_to_blog($wp_admin_submenus_blog_id);
         delete_option('wp_admin_submenus_options');
         restore_current_blog();
     }
