@@ -3,7 +3,7 @@
  * Plugin Name: WP Admin Submenus
  * Plugin URI: https://github.com/dbrabyn/wp-admin-submenus
  * Description: Adds submenus to WordPress admin for quick access to posts, taxonomies, and users. Configurable via Settings.
- * Version: 1.0.17
+ * Version: 1.0.18
  * Author: David Brabyn
  * Author URI: https://9wdigital.com
  * License: GPL v2 or later
@@ -35,6 +35,11 @@ $wp_admin_submenus_update_checker = PucFactory::buildUpdateChecker(
 
 // Optionally set the branch for updates (defaults to 'main' or 'master')
 // $wp_admin_submenus_update_checker->setBranch('main');
+
+// Authenticate GitHub API requests to avoid rate limiting
+if ( defined( 'PLL_ACF_SYNC_GITHUB_TOKEN' ) && PLL_ACF_SYNC_GITHUB_TOKEN ) {
+	$wp_admin_submenus_update_checker->setAuthentication( PLL_ACF_SYNC_GITHUB_TOKEN );
+}
 
 /**
  * Main Plugin Class
